@@ -1,0 +1,254 @@
+"""
+Temporal Network Analysis: Community Detection Module
+
+This module provides functions for detecting and analyzing community structures
+in networks using multiple algorithms. Supports temporal analysis by tracking
+how communities evolve over time.
+"""
+
+import pandas as pd
+from igraph import Graph
+import matplotlib.pyplot as plt
+import os
+from typing import List, Optional
+
+
+def format_large_numbers(x, pos):
+    """Format large numbers with appropriate units (k, M, B)."""
+    if x >= 1_000_000_000:
+        return f'{x/1_000_000_000:.1f}B'
+    elif x >= 1_000_000:
+        return f'{x/1_000_000:.1f}M'
+    elif x >= 1_000:
+        return f'{x/1_000:.1f}k'
+    else:
+        return f'{x:.0f}'
+
+
+def communities_measures(graphs: List,
+                        graph_labels: Optional[List[str]] = None,
+                        save_path: str = "plots/",
+                        visualisation: bool = True) -> dict:
+    """
+    Detect and analyze community structures using multiple algorithms.
+    
+    Applies various community detection algorithms to each graph in the temporal
+    sequence and tracks how community structure evolves over time. Provides both
+    detailed community membership and summary statistics.
+    
+    Parameters
+    ----------
+    graphs : list
+        List of igraph.Graph objects to analyze
+    graph_labels : list of str, optional
+        Labels for each graph (e.g., ["2019-01", "2019-02", ...])
+        If not provided, defaults to "Graph 1", "Graph 2", etc.
+    save_path : str, optional
+        Directory path for saving results and visualizations (default: "plots/")
+    visualisation : bool, optional
+        If True (default), generates plots for community evolution
+        
+    Returns
+    -------
+    dict
+        Dictionary with results for each algorithm, mapping algorithm names to
+        DataFrames containing community assignments
+        
+    Examples
+    --------
+    >>> import igraph as ig
+    >>> from temporal_networks import communities_measures
+    >>> G1 = ig.Graph.Barabasi(n=100, m=2)
+    >>> G2 = ig.Graph.Barabasi(n=100, m=2)
+    >>> graphs = [G1, G2]
+    >>> labels = ["2019-01", "2019-02"]
+    >>> communities = communities_measures(graphs, graph_labels=labels)
+    
+    Notes
+    -----
+    Community detection algorithms used:
+    - Leiden: Optimizes modularity with refined granularity
+    - Louvain: Fast modularity optimization
+    - Walktrap: Uses random walks to find communities
+    - Fast Greedy: Greedy optimization of modularity
+    - Label Propagation: Fast method based on label propagation
+    - Spinglass: Based on statistical mechanics
+    - Infomap: Information-theoretic approach
+    """
+    
+    # Validate inputs
+    if not graphs:
+        raise ValueError("graphs list cannot be empty")
+    
+    # Set up graph labels
+    if graph_labels is None:
+        graph_labels = [f"Graph {i+1}" for i in range(len(graphs))]
+    elif len(graph_labels) != len(graphs):
+        raise ValueError(f"graph_labels length ({len(graph_labels)}) must match graphs length ({len(graphs)})")
+    
+    # Create output directory
+    os.makedirs(save_path, exist_ok=True)
+
+    # Define community detection algorithms
+    # Note: Some require undirected graphs, so we convert as needed
+    community_algorithms = [
+        ("leiden", "community_leiden"),
+        ("louvain", "community_multilevel"),
+        ("walktrap", "community_walktrap"),
+        ("fast_greedy", "community_fastgreedy"),
+        ("label_prop", "community_label_propagation"),
+        ("spinglass", "community_spinglass"),
+        ("infomap", "community_infomap")
+    ]
+
+    results = {}
+
+    # Apply each algorithm
+    for algo_name, algo_func in community_algorithms:
+        print(f"\nProcessing algorithm: {algo_name}")
+        all_communities = []
+        num_communities_list = []
+        max_community_size_list = []
+
+        # Apply algorithm to each graph
+        for graph_idx, graph in enumerate(graphs):
+            graph_label = graph_labels[graph_idx]
+            
+            try:
+                # Convert to undirected for algorithms that require it
+                g = graph.copy()
+                if g.is_directed() and algo_func in ["community_walktrap", 
+                                                      "community_fastgreedy",
+                                                      "community_label_propagation",
+                                                      "community_spinglass"]:
+                    g = g.as_undirected()
+                
+                # Simplify graph to remove multi-edges and loops
+                g.simplify(multiple=True, loops=True, combine_edges=dict(weight="sum"))
+                
+                # Get weights if available
+                weights = g.es["weight"] if "weight" in g.es.attributes() else None
+                
+                # Get node labels
+                if "name" in g.vs.attributes():
+                    node_labels = g.vs["name"]
+                elif "label" in g.vs.attributes():
+                    node_labels = g.vs["label"]
+                else:
+                    node_labels = [f"Node_{i}" for i in range(g.vcount())]
+                
+                # Detect communities using the specified algorithm
+                try:
+                    if algo_func in ["community_walktrap", "community_fastgreedy"]:
+                        partition = getattr(g, algo_func)(weights=weights).as_clustering()
+                    elif algo_func == "community_infomap":
+                        partition = getattr(g, algo_func)(edge_weights=weights)
+                    else:
+                        partition = getattr(g, algo_func)(weights=weights)
+                except Exception as e:
+                    print(f"  Warning: Algorithm {algo_name} failed on graph {graph_label}: {e}")
+                    continue
+                
+                # Store community assignments
+                for comm_idx, comm in enumerate(partition):
+                    for node_idx in comm:
+                        all_communities.append({
+                            "Graph": graph_label,
+                            "Node": node_labels[node_idx],
+                            "Community": comm_idx
+                        })
+                
+                # Calculate statistics for this graph
+                num_communities_list.append({
+                    "Graph": graph_label,
+                    "Number_of_Communities": len(partition),
+                    "Max_Community_Size": max(len(c) for c in partition) if partition else 0,
+                    "Min_Community_Size": min(len(c) for c in partition) if partition else 0,
+                    "Mean_Community_Size": sum(len(c) for c in partition) / len(partition) if partition else 0,
+                })
+                
+            except Exception as e:
+                print(f"  Error processing graph {graph_label} with algorithm {algo_name}: {e}")
+                continue
+
+        # Convert to DataFrame and save
+        if all_communities:
+            communities_df = pd.DataFrame(all_communities)
+            csv_filename = os.path.join(save_path, f"communities_{algo_name}_assignments.csv")
+            communities_df.to_csv(csv_filename, index=False)
+            print(f"  ✓ Community assignments saved: {csv_filename}")
+            results[algo_name] = communities_df
+        else:
+            print(f"  Warning: No communities detected for {algo_name}")
+            continue
+
+        # Save statistics
+        if num_communities_list:
+            stats_df = pd.DataFrame(num_communities_list)
+            stats_csv_filename = os.path.join(save_path, f"communities_{algo_name}_stats.csv")
+            stats_df.to_csv(stats_csv_filename, index=False)
+            print(f"  ✓ Community statistics saved: {stats_csv_filename}")
+            
+            # Generate visualizations
+            if visualisation:
+                _plot_community_stats(stats_df, algo_name, save_path)
+
+    return results
+
+
+def _plot_community_stats(stats_df: pd.DataFrame, algo_name: str, save_path: str) -> None:
+    """
+    Helper function to plot community statistics.
+    
+    Parameters
+    ----------
+    stats_df : pd.DataFrame
+        DataFrame with community statistics
+    algo_name : str
+        Name of the algorithm
+    save_path : str
+        Path for saving plots
+    """
+    
+    properties_to_plot = [
+        ("Number_of_Communities", "Number of Communities"),
+        ("Max_Community_Size", "Maximum Community Size"),
+        ("Mean_Community_Size", "Mean Community Size"),
+    ]
+    
+    for prop_col, prop_label in properties_to_plot:
+        if prop_col not in stats_df.columns:
+            continue
+        
+        try:
+            fig, ax = plt.subplots(figsize=(14, 7), dpi=100)
+            
+            x_range = range(len(stats_df))
+            y_values = stats_df[prop_col]
+            
+            ax.plot(x_range, y_values, marker='o', linestyle='-',
+                   markersize=12, linewidth=3, color='#2ca02c')
+            
+            ax.set_xlabel("Year - Month", fontsize=14, fontweight='bold')
+            ax.set_ylabel(prop_label, fontsize=14, fontweight='bold')
+            ax.set_title(f"{prop_label} ({algo_name})", fontsize=16, fontweight='bold')
+            
+            # Set x-ticks
+            tick_positions = range(0, len(stats_df), max(1, len(stats_df)//10))
+            ax.set_xticks(tick_positions)
+            ax.set_xticklabels([stats_df["Graph"].iloc[i] for i in tick_positions],
+                              rotation=45, ha='right', fontsize=12, fontweight='bold')
+            
+            ax.yaxis.set_major_formatter(plt.FuncFormatter(format_large_numbers))
+            plt.yticks(fontsize=12, fontweight='bold')
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            
+            # Save plot
+            plot_filename = os.path.join(save_path, f"communities_{algo_name}_{prop_col}.pdf")
+            fig.savefig(plot_filename, dpi=300, bbox_inches='tight')
+            plt.close(fig)
+            print(f"  ✓ Plot saved: {plot_filename}")
+            
+        except Exception as e:
+            print(f"  Warning: Could not plot {prop_label}: {e}")
