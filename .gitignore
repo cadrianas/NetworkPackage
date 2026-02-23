@@ -220,3 +220,4 @@ paper/*.spl
 paper/*.synctex.gz
 paper/*.pdf
 paper/Figures/
+examples/plots
