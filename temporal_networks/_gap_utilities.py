@@ -396,8 +396,7 @@ def format_large_numbers(x, pos):
 
 
 def plot_with_gap_handling(ax, graph_labels: List[str], y_values, gap_segments: List[Tuple],
-                           marker='o', linestyle='-', markersize=10,
-                           linewidth=2, color='#1f77b4', label: Optional[str] = None):
+                           **kwargs):
     """
     Plot data with proper handling of temporal gaps.
 
@@ -416,18 +415,11 @@ def plot_with_gap_handling(ax, graph_labels: List[str], y_values, gap_segments: 
     gap_segments : list of tuple
         Continuous segments as (start_idx, end_idx) tuples
         (from detect_temporal_gaps()["segments"])
-    marker : str, optional
-        Marker style (default: 'o')
-    linestyle : str, optional
-        Line style (default: '-')
-    markersize : int, optional
-        Marker size (default: 10)
-    linewidth : float, optional
-        Line width (default: 2)
-    color : str, optional
-        Color (default: '#1f77b4')
-    label : str, optional
-        Label for legend (default: None)
+    **kwargs : dict, optional
+        Additional keyword arguments passed to `ax.plot()`.
+        Common options include `marker`, `linestyle`, `markersize`,
+        `linewidth`, `color`, and `label`. Default styling is applied
+        if these are not provided.
 
     Examples
     --------
@@ -442,16 +434,31 @@ def plot_with_gap_handling(ax, graph_labels: List[str], y_values, gap_segments: 
     >>> plot_with_gap_handling(ax, labels, y_values, gap_info["segments"])
     >>> ax.set_title("Example with Gap")
     """
+    # Set default plot styles
+    default_kwargs = {
+        'marker': 'o',
+        'linestyle': '-',
+        'markersize': 10,
+        'linewidth': 2,
+        'color': '#1f77b4'
+    }
+
+    # Extract label if provided, as it needs special handling
+    label = kwargs.pop('label', None)
+
+    # Update defaults with any user-provided kwargs
+    plot_kwargs = {**default_kwargs, **kwargs}
+
     for i, (segment_start, segment_end) in enumerate(gap_segments):
         x_indices = np.arange(segment_start, segment_end)
         y_segment = [y_values[idx] for idx in x_indices]
 
         # Only add label for first segment (for legend)
-        segment_label = label if i == 0 else None
+        segment_kwargs = plot_kwargs.copy()
+        if label and i == 0:
+            segment_kwargs['label'] = label
 
-        ax.plot(x_indices, y_segment, marker=marker, linestyle=linestyle,
-                markersize=markersize, linewidth=linewidth, color=color,
-                label=segment_label)
+        ax.plot(x_indices, y_segment, **segment_kwargs)
 
     # Set x-ticks and labels to show all data points
     ax.set_xticks(range(len(graph_labels)))
