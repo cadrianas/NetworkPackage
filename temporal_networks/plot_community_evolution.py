@@ -97,14 +97,14 @@ def plot_community_evolution(graphs: List,
     for graph_idx, graph in enumerate(graphs):
         try:
             g = graph.copy()
-            if g.is_directed() and community_algorithm.lower() in ["walktrap", 
+            if g.is_directed() and community_algorithm.lower() in {"walktrap",
                                                                     "fast_greedy",
                                                                     "label_prop",
-                                                                    "spinglass"]:
+                                                                    "spinglass"}:
                 g = g.as_undirected()
             
             try:
-                if community_algorithm.lower() in ["walktrap", "fast_greedy"]:
+                if community_algorithm.lower() in {"walktrap", "fast_greedy"}:
                     partition = algo_func(g).as_clustering()
                 else:
                     partition = algo_func(g)
