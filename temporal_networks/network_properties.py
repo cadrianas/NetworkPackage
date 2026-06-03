@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import igraph as ig
 from typing import List, Optional
 from ._gap_utilities import (
     detect_temporal_gaps,
@@ -146,17 +147,17 @@ def network_properties(graphs: List,
 
             try:
                 diameter.append(graph.diameter())
-            except Exception:
+            except ig.InternalError:
                 diameter.append(np.nan)
 
             try:
                 girth.append(graph.girth())
-            except Exception:
+            except ig.InternalError:
                 girth.append(np.nan)
 
             try:
                 avg_path_length.append(np.mean(graph.shortest_paths()))
-            except Exception:
+            except ig.InternalError:
                 avg_path_length.append(np.nan)
 
             mean_degree.append(np.mean(graph.degree()))
@@ -164,7 +165,7 @@ def network_properties(graphs: List,
 
             try:
                 transitivity.append(graph.transitivity_undirected())
-            except Exception:
+            except ig.InternalError:
                 transitivity.append(np.nan)
 
             is_bipartite.append(graph.is_bipartite())
