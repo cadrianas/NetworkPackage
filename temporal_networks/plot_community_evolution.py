@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 from plotly.offline import plot
 import random
 from typing import List, Tuple, Optional, Any
+from ._gap_utilities import validate_and_setup_graphs
 
 from typing import List
 from ._gap_utilities import validate_and_setup_graphs
