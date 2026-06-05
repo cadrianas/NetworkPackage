@@ -143,6 +143,9 @@ def calculate_centralities(graphs: List,
             print(f"Warning: Graph {graph_name} has no 'name' or 'label' attribute. Using node indices.")
 
         # Compute centrality measures
+        vcount = graph.vcount()
+        none_list = [None] * vcount
+
         try:
             degree_centrality = graph.degree()
         except Exception:
