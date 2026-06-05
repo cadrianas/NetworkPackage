@@ -124,6 +124,7 @@ def calculate_centralities(graphs: List,
     # Iterate over each graph
     for graph_idx, graph in enumerate(graphs):
         graph_name = graph_labels[graph_idx]
+        vcount = graph.vcount()
 
         vcount = graph.vcount()
 
