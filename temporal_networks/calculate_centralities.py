@@ -124,6 +124,13 @@ def calculate_centralities(graphs: List,
     # Iterate over each graph
     for graph_idx, graph in enumerate(graphs):
         graph_name = graph_labels[graph_idx]
+        vcount = graph.vcount()
+
+        vcount = graph.vcount()
+
+        vcount = graph.vcount()
+
+        n_nodes = graph.vcount()
 
         # Get node labels from graph attributes
         if "name" in graph.vs.attributes():
@@ -131,7 +138,8 @@ def calculate_centralities(graphs: List,
         elif "label" in graph.vs.attributes():
             node_labels = graph.vs["label"]
         else:
-            node_labels = [f"Node_{i}" for i in range(graph.vcount())]
+            node_labels = [f"Node_{i}" for i in range(n_nodes)]
+            node_labels = [f"Node_{i}" for i in range(vcount)]
             print(f"Warning: Graph {graph_name} has no 'name' or 'label' attribute. Using node indices.")
 
         # Compute centrality measures
@@ -141,52 +149,62 @@ def calculate_centralities(graphs: List,
         try:
             degree_centrality = graph.degree()
         except Exception:
-            degree_centrality = none_list
+            degree_centrality = [None] * n_nodes
+            degree_centrality = [None] * vcount
 
         try:
             closeness_centrality = graph.closeness()
         except Exception:
-            closeness_centrality = none_list
+            closeness_centrality = [None] * n_nodes
+            closeness_centrality = [None] * vcount
 
         try:
             betweenness_centrality = graph.betweenness(directed=graph.is_directed())
         except Exception:
-            betweenness_centrality = none_list
+            betweenness_centrality = [None] * n_nodes
+            betweenness_centrality = [None] * vcount
 
         try:
             eigenvector_centrality = graph.eigenvector_centrality()
         except Exception:
-            eigenvector_centrality = none_list
+            eigenvector_centrality = [None] * n_nodes
+            eigenvector_centrality = [None] * vcount
 
         try:
             pagerank = graph.pagerank()
         except Exception:
-            pagerank = none_list
+            pagerank = [None] * n_nodes
+            pagerank = [None] * vcount
 
         try:
             harmonic_centrality = graph.harmonic_centrality()
         except Exception:
-            harmonic_centrality = none_list
+            harmonic_centrality = [None] * n_nodes
+            harmonic_centrality = [None] * vcount
 
         try:
             eccentricity = graph.eccentricity()
         except Exception:
-            eccentricity = none_list
+            eccentricity = [None] * n_nodes
+            eccentricity = [None] * vcount
 
         try:
             clustering_coefficient = graph.transitivity_local_undirected()
         except Exception:
-            clustering_coefficient = none_list
+            clustering_coefficient = [None] * n_nodes
+            clustering_coefficient = [None] * vcount
 
         try:
             authority_score = graph.authority_score()
         except Exception:
-            authority_score = none_list
+            authority_score = [None] * n_nodes
+            authority_score = [None] * vcount
 
         try:
             hub_score = graph.hub_score()
         except Exception:
-            hub_score = none_list
+            hub_score = [None] * n_nodes
+            hub_score = [None] * vcount
 
         # For each node, store all centrality measures
         for node_idx, node_label in enumerate(node_labels):
