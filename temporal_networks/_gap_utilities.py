@@ -359,6 +359,10 @@ def print_gap_report(graph_labels: List[str], gap_info: Dict,
         Output from detect_temporal_gaps()
     unit : str, optional
         Time unit for reporting (default: "months")
+
+    Returns
+    -------
+    None
     """
     if "report" in gap_info:
         print(gap_info["report"])
@@ -456,6 +460,10 @@ def plot_with_gap_handling(ax, graph_labels: List[str], y_values, gap_segments: 
         Common options include `marker`, `linestyle`, `markersize`,
         `linewidth`, `color`, and `label`. Default styling is applied
         if these are not provided.
+
+    Returns
+    -------
+    None
 
     Examples
     --------

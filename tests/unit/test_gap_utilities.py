@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 from temporal_networks._gap_utilities import parse_flexible_datetime, format_large_numbers
 
@@ -37,8 +38,6 @@ class TestFormatLargeNumbers(unittest.TestCase):
         self.assertEqual(format_large_numbers(1500.5, 0), "1.5k")
         self.assertEqual(format_large_numbers(999.9, 0), "1000") # 999.9 formatted with .0f is 1000
 
-
-from datetime import datetime
 
 class TestParseFlexibleDatetime(unittest.TestCase):
     def test_parse_flexible_datetime_valid_formats(self):

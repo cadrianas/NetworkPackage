@@ -12,9 +12,6 @@ import random
 from typing import List, Tuple, Optional, Any
 from ._gap_utilities import validate_and_setup_graphs
 
-from typing import List
-from ._gap_utilities import validate_and_setup_graphs
-
 
 def _detect_communities(graphs: List, community_algorithm: str) -> Tuple[List[Any], str]:
     """Helper function to detect communities for each graph."""
