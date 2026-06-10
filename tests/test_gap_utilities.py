@@ -38,9 +38,6 @@ def test_calculate_time_difference_same_date():
     assert calculate_time_difference(d1, d2, unit="days") == 0.0
 
 def test_calculate_time_difference_invalid_unit():
-    d1 = datetime(2024, 3, 1)
-    d2 = datetime(2024, 5, 1)
-def test_calculate_time_difference_invalid_unit():
     """Test that calculating time difference with an invalid unit raises a ValueError."""
     d1 = datetime(2024, 3, 1)
     d2 = datetime(2024, 5, 1)

@@ -7,7 +7,7 @@ setup(
     author="Adriana-Stefania Ciupeanu, Julien Arino",
     author_email="Julien.Arino@umanitoba.ca",
     license="GPL-3.0",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "tests.*"]),
     install_requires=[
         "numpy>=1.26.4",
         "pandas>=2.2.2",

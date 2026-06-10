@@ -29,10 +29,6 @@ class TestEdgeFormationDissolutionException(unittest.TestCase):
 
             # Verify that the returned DataFrame is empty due to the exception skipping the iteration
             self.assertTrue(results.empty)
-import igraph as ig
-import pandas as pd
-
-from temporal_networks.edge_formation_dissolution import compute_edge_dynamics
 
 
 class TestEdgeFormationDissolution(unittest.TestCase):
