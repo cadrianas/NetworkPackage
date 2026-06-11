@@ -8,7 +8,7 @@ set up a development environment, run the test suite, and submit changes.
 Clone the repository and install in editable mode with development dependencies:
 
 ```bash
-git clone https://github.com/cadrianas/NetworkPackage
+git clone https://github.com/cadrianas/temporal_networks
 cd NetworkPackage
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
