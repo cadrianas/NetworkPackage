@@ -9,7 +9,7 @@ import igraph as ig
 import plotly.graph_objs as go
 from plotly.offline import plot
 import random
-from typing import List, Tuple, Optional, Any
+from typing import List, Tuple, Any
 from ._gap_utilities import validate_and_setup_graphs
 
 
@@ -86,12 +86,12 @@ def plot_community_evolution(graphs: List,
                             output_file: str = "community_evolution.html") -> None:
     """
     Create interactive animation of community evolution across temporal network.
-    
+
     Generates an interactive Plotly animation showing how community structures
     detected by a specified algorithm evolve across a sequence of networks.
     Nodes are colored by community membership and animation allows frame-by-frame
     viewing of the temporal evolution.
-    
+
     Parameters
     ----------
     graphs : list of igraph.Graph
@@ -108,31 +108,31 @@ def plot_community_evolution(graphs: List,
         - "louvain"
     output_file : str, optional
         Filename for saving the HTML animation (default: "community_evolution.html")
-        
+
     Returns
     -------
     None
         Saves output_file with interactive animation
-        
+
     Examples
     --------
     >>> import igraph as ig
     >>> from temporal_networks import plot_community_evolution
     >>> graphs = [ig.Graph.Barabasi(n=50, m=2) for _ in range(12)]
     >>> plot_community_evolution(graphs, community_algorithm="louvain")
-    
+
     Notes
     -----
     The animation creates one frame per graph, with playback controls:
     - Play: Animate through all frames
     - Pause: Stop animation
     - Restart: Return to first frame
-    
+
     Node positions are randomly assigned if not present in graph attributes.
     For better visualization, pre-compute positions (e.g., using Fruchterman-Reingold)
     and store as "x" and "y" vertex attributes.
     """
-    
+
     if not graphs:
         raise ValueError("graphs list cannot be empty")
 
@@ -179,26 +179,26 @@ def _create_animation_frames(graphs: List,
         One frame per successfully rendered graph.
     """
     frames = []
-    
+
     for frame_idx, (graph, partition) in enumerate(zip(graphs, communities_list)):
         if partition is None:
             print(f"  Skipping frame {frame_idx} due to detection failure")
             continue
-        
+
         try:
             if "x" in graph.vs.attributes() and "y" in graph.vs.attributes():
                 pos = [(node["x"], node["y"]) for node in graph.vs]
             else:
-                pos = [(random.uniform(0, 1), random.uniform(0, 1)) 
+                pos = [(random.uniform(0, 1), random.uniform(0, 1))
                        for _ in graph.vs]
                 print(f"  Note: Frame {frame_idx} using random "
                       f"positions (no x/y attributes)")
-            
+
             try:
                 community_membership = partition.membership
             except AttributeError:
                 community_membership = list(partition.membership)
-            
+
             node_trace = go.Scatter(
                 x=[p[0] for p in pos],
                 y=[p[1] for p in pos],
@@ -210,12 +210,12 @@ def _create_animation_frames(graphs: List,
                     showscale=True,
                     colorbar=dict(title="Community")
                 ),
-                text=[f"Node {i} (Community {community_membership[i]})" 
+                text=[f"Node {i} (Community {community_membership[i]})"
                       for i in range(len(pos))],
                 hoverinfo="text",
                 name=f"Frame {frame_idx + 1}"
             )
-            
+
             edges = graph.get_edgelist()
             pos_x = [p[0] for p in pos]
             pos_y = [p[1] for p in pos]
@@ -232,7 +232,7 @@ def _create_animation_frames(graphs: List,
                 app_y(pos_y[u])
                 app_y(pos_y[v])
                 app_y(None)
-            
+
             edge_trace = go.Scatter(
                 x=edge_x,
                 y=edge_y,
@@ -241,13 +241,13 @@ def _create_animation_frames(graphs: List,
                 mode="lines",
                 name=f"Edges {frame_idx + 1}"
             )
-            
+
             frame = go.Frame(
                 data=[edge_trace, node_trace],
                 name=f"Frame {frame_idx + 1}"
             )
             frames.append(frame)
-            
+
         except Exception as e:
             print(f"  Warning: Could not create visualization for "
                   f"frame {frame_idx}: {e}")
