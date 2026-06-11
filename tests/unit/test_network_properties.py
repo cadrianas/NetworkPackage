@@ -5,6 +5,12 @@ import igraph as ig
 from unittest.mock import patch, MagicMock
 
 from temporal_networks.network_properties import network_properties
+import importlib
+
+# The package shadows the `network_properties` submodule with the function
+# of the same name, so string-based patch targets can't resolve. Grab the
+# real module via importlib and use patch.object against it.
+_np_module = importlib.import_module("temporal_networks.network_properties")
 
 class TestNetworkProperties(unittest.TestCase):
     def setUp(self):
@@ -101,7 +107,7 @@ class TestNetworkProperties(unittest.TestCase):
         """Test if visualisation functions are called when visualisation=True."""
         graphs = [self.g1]
 
-        with patch('temporal_networks.network_properties._plot_properties') as mock_plot:
+        with patch.object(_np_module, '_plot_properties') as mock_plot:
             network_properties(
                 graphs=graphs,
                 save_path="test_plots/",
@@ -115,8 +121,8 @@ class TestNetworkProperties(unittest.TestCase):
         graphs = [self.g1]
         labels = ["2024-01"]
 
-        with patch('temporal_networks.network_properties.print_gap_report') as mock_print_gap:
-            with patch('temporal_networks.network_properties.detect_temporal_gaps') as mock_detect_gap:
+        with patch.object(_np_module, 'print_gap_report') as mock_print_gap:
+            with patch.object(_np_module, 'detect_temporal_gaps') as mock_detect_gap:
                 mock_detect_gap.return_value = {"segments": [], "gaps": []}
                 network_properties(
                     graphs=graphs,
@@ -154,11 +160,10 @@ class TestNetworkProperties(unittest.TestCase):
             # So the DataFrame should only have 2 rows (G1 and G2)
             self.assertEqual(len(df), 2)
             self.assertEqual(df.loc[0, "Graph"], "G1")
-            # Note: the implementation assigns labels using graph_labels[:len(num_vertices)]
-            # which means it will pick the first two labels ("G1" and "ErrorGraph")
-            # even though the graphs were G1 and G2. This reflects the current behavior
-            # of the function where label alignment shifts when an error is skipped.
-            self.assertEqual(df.loc[1, "Graph"], "ErrorGraph")
+            # The implementation uses graph_labels[i] for each successfully
+            # processed graph, so skipping the middle graph does not shift
+            # labels: row 1 correctly corresponds to G2.
+            self.assertEqual(df.loc[1, "Graph"], "G2")
 
             # Verify the warning was printed
             mock_print.assert_any_call("Warning: Error processing graph ErrorGraph: Test Error")

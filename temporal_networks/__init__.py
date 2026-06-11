@@ -11,6 +11,7 @@ __all__ = [
     "calculate_centralities",
     "communities_measures",
     "vertex_properties",
+    "compute_edge_dynamics",
     "edge_formation",
     "edge_dissolution",
     "plot_edge_dynamics",
@@ -23,6 +24,7 @@ from .calculate_centralities import calculate_centralities
 from .communities_measures import communities_measures
 from .vertex_properties import vertex_properties
 from .edge_formation_dissolution import (
+    compute_edge_dynamics,
     edge_formation,
     edge_dissolution,
     plot_edge_dynamics,
