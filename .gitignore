@@ -231,3 +231,5 @@ test_output/
 *.csv
 *.html
 plots/
+
+.venv-audit/
