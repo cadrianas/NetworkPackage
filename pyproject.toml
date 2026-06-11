@@ -51,8 +51,7 @@ Repository = "https://github.com/cadrianas/temporal_networks"
 exclude = ["tests*", "benchmarks*", "examples*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-verbosity = 1
+addopts = "-v"  
 
 [tool.ruff]
 line-length = 88
