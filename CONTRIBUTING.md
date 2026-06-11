@@ -9,7 +9,7 @@ Clone the repository and install in editable mode with development dependencies:
 
 ```bash
 git clone https://github.com/cadrianas/temporal_networks
-cd NetworkPackage
+cd temporal_networks
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
@@ -47,7 +47,7 @@ discuss it before writing code.
 ## Reporting issues
 
 Please open a GitHub issue at 
-https://github.com/cadrianas/NetworkPackage/issues and include:
+https://github.com/cadrianas/temporal_networks/issues and include:
 - A minimal reproducible example
 - Your Python version and igraph version (`pip show igraph`)
 - The full error message or unexpected output
