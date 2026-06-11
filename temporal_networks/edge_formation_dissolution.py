@@ -25,6 +25,7 @@ from ._gap_utilities import (
 )
 
 __all__ = [
+    "compute_edge_dynamics",
     "edge_formation",
     "edge_dissolution",
     "plot_edge_dynamics",
